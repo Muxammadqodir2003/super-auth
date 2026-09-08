@@ -14,6 +14,8 @@
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
+            nodejs_22
+            pnpm
             # Prisma va OpenSSL paketlari
             openssl
             prisma-engines
