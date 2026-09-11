@@ -30,7 +30,11 @@ model Session {
   
   fingerprint  String
   ipAddress    String
-  userAgent    String
+  country      String?
+  city         String?
+  deviceType   String?
+  os           String?
+  browser      String?
   lastActiveAt DateTime @default(now())
   createdAt    DateTime @default(now())
 
