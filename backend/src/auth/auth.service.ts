@@ -100,4 +100,47 @@ export class AuthService {
 
     return { user: newUser, ...tokens };
   }
+
+  async login(
+    email: string,
+    password: string,
+    fingerprint: string,
+    ipAddress: string,
+    country: string,
+    city: string,
+    browser: string,
+    os: string,
+    deviceType: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const isPasswordValid = await argon.verify(user.passwordHash, password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Invalid password');
+    }
+
+    const session = await this.prisma.session.create({
+      data: {
+        userId: user.id,
+        fingerprint,
+        ipAddress,
+        country,
+        city,
+        browser,
+        os,
+        deviceType,
+      },
+    });
+
+    const tokens = this.tokenService.generateTokens({ userId: user.id });
+    await this.tokenService.saveToken(session.id, tokens.refreshToken);
+
+    return { user, ...tokens };
+  }
 }
