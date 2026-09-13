@@ -31,6 +31,12 @@ export class TokenService {
     });
   }
 
+  async findToken(refreshToken: string) {
+    return this.prisma.token.findFirst({
+      where: { refreshToken },
+    });
+  }
+
   verifyAccessToken(accessToken: string) {
     return this.jwtService.verify(accessToken);
   }
