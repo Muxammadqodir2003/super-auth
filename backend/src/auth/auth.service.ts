@@ -92,7 +92,7 @@ export class AuthService {
       },
     });
 
-    const tokens = this.tokenService.generateTokens({ userId: newUser.id });
+    const tokens = this.tokenService.generateTokens({ sessionId: session.id });
     await this.tokenService.saveToken(session.id, tokens.refreshToken);
 
     await this.redisClient.del(`otp:${email}`);
@@ -138,9 +138,34 @@ export class AuthService {
       },
     });
 
-    const tokens = this.tokenService.generateTokens({ userId: user.id });
+    const tokens = this.tokenService.generateTokens({ sessionId: session.id });
     await this.tokenService.saveToken(session.id, tokens.refreshToken);
 
     return { user, ...tokens };
+  }
+
+  async refreshToken(refreshToken: string, fingerprint: string) {
+    const tokenDb = await this.tokenService.findToken(refreshToken);
+    const payload = this.tokenService.verifyRefreshToken(refreshToken);
+
+    if (!tokenDb || !payload) {
+      throw new BadRequestException('Token not found');
+    }
+
+    const session = await this.prisma.session.findUnique({
+      where: { id: payload.sessionId },
+      include: { user: { select: { id: true } } },
+    });
+
+    if (session?.fingerprint !== fingerprint) {
+      throw new BadRequestException('Invalid fingerprint');
+    }
+
+    const tokens = this.tokenService.generateTokens({
+      sessionId: payload.sessionId,
+    });
+    await this.tokenService.saveToken(payload.sessionId, tokens.refreshToken);
+
+    return { user: session?.user, ...tokens };
   }
 }

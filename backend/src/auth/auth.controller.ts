@@ -5,6 +5,7 @@ import { UserAgent } from 'src/common/decorators/user-agent.decorator';
 import { UAParser } from 'ua-parser-js';
 import { SessionHelper } from './session-helper';
 import type { Response } from 'express';
+import { Cookie } from 'src/common/decorators/cookie.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -72,6 +73,26 @@ export class AuthController {
       userAgentParsed.device.type || 'Unknown',
     );
 
+    res.cookie('refreshToken', data.refreshToken, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: 'none',
+      secure: true,
+      path: '/',
+    });
+    return data;
+  }
+
+  @Post('refresh')
+  async refreshToken(
+    @Body() body: { fingerprint: string },
+    @Res({ passthrough: true }) res: Response,
+    @Cookie('refreshToken') refreshToken: string,
+  ) {
+    const data = await this.authService.refreshToken(
+      refreshToken,
+      body.fingerprint,
+    );
     res.cookie('refreshToken', data.refreshToken, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
