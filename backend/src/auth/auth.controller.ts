@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/registerUserDto';
 import { UserAgent } from 'src/common/decorators/user-agent.decorator';
@@ -6,6 +14,8 @@ import { UAParser } from 'ua-parser-js';
 import { SessionHelper } from './session-helper';
 import type { Response } from 'express';
 import { Cookie } from 'src/common/decorators/cookie.decorator';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { User } from 'src/common/decorators/user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -101,5 +111,25 @@ export class AuthController {
       path: '/',
     });
     return data;
+  }
+
+  @Post('logout')
+  async logout(
+    @Body() body: { sessionId: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    res.clearCookie('refreshToken');
+    return { success: true };
+  }
+
+  @Delete('user')
+  @UseGuards(AuthGuard)
+  async deleteUser(
+    @User('id') userId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.deleteUser(userId);
+    res.clearCookie('refreshToken');
+    return { success: true };
   }
 }
