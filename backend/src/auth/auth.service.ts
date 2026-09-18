@@ -175,4 +175,10 @@ export class AuthService {
       where: { id: sessionId },
     });
   }
+
+  async deleteUser(userId: string) {
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
+  }
 }
