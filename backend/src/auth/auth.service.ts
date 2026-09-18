@@ -168,4 +168,11 @@ export class AuthService {
 
     return { user: session?.user, ...tokens };
   }
+
+  async logout(sessionId: string) {
+    await this.tokenService.removeToken(sessionId);
+    await this.prisma.session.delete({
+      where: { id: sessionId },
+    });
+  }
 }

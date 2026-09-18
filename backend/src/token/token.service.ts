@@ -31,6 +31,12 @@ export class TokenService {
     });
   }
 
+  async removeToken(sessionId: string) {
+    await this.prisma.token.delete({
+      where: { sessionId },
+    });
+  }
+
   async findToken(refreshToken: string) {
     return this.prisma.token.findFirst({
       where: { refreshToken },

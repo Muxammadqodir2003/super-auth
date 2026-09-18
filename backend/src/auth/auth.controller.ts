@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/registerUserDto';
 import { UserAgent } from 'src/common/decorators/user-agent.decorator';
@@ -101,5 +101,11 @@ export class AuthController {
       path: '/',
     });
     return data;
+  }
+
+  @Post('logout')
+  async logout(@Body() body: { sessionId: string }, @Res() res: Response) {
+    res.clearCookie('refreshToken');
+    return { success: true };
   }
 }
