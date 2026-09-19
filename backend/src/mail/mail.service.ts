@@ -25,4 +25,21 @@ export class MailService {
       //throw error
     }
   }
+
+  async sendVerifyChangeOtp(to: string, name: string, otpCode: string) {
+    try {
+      await this.mailerService.sendMail({
+        to,
+        subject: 'Tasdiqlash kodi (OTP)',
+        template: './veify-email.otp.hbs',
+        context: {
+          name,
+          otpCode,
+          expireMinutes: 5,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${to}`, error);
+    }
+  }
 }
